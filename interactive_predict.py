@@ -1,10 +1,10 @@
 from common import Common
-from extractor import Extractor
+from python_extractor.extractor import Extractor
 
 SHOW_TOP_CONTEXTS = 10
 MAX_PATH_LENGTH = 8
 MAX_PATH_WIDTH = 2
-EXTRACTION_API = 'https://po3g2dx2qa.execute-api.us-east-1.amazonaws.com/production/extractmethods'
+# EXTRACTION_API = 'https://po3g2dx2qa.execute-api.us-east-1.amazonaws.com/production/extractmethods'
 
 
 class InteractivePredictor:
@@ -14,7 +14,8 @@ class InteractivePredictor:
         model.predict([])
         self.model = model
         self.config = config
-        self.path_extractor = Extractor(config, EXTRACTION_API, self.config.MAX_PATH_LENGTH, max_path_width=2)
+        # self.path_extractor = Extractor(config, EXTRACTION_API, self.config.MAX_PATH_LENGTH, max_path_width=2)
+        self.path_extractor = Extractor(self.config.MAX_PATH_LENGTH, MAX_PATH_WIDTH)
 
     @staticmethod
     def read_file(input_filename):
@@ -22,7 +23,7 @@ class InteractivePredictor:
             return file.readlines()
 
     def predict(self):
-        input_filename = 'Input.java'
+        input_filename = 'input.py'
         print('Serving')
         while True:
             print('Modify the file: "' + input_filename + '" and press any key when ready, or "q" / "exit" to exit')
@@ -30,11 +31,16 @@ class InteractivePredictor:
             if user_input.lower() in self.exit_keywords:
                 print('Exiting...')
                 return
-            user_input = ' '.join(self.read_file(input_filename))
             try:
-                predict_lines, pc_info_dict = self.path_extractor.extract_paths(user_input)
-            except ValueError:
+                predict_lines = list(path.strip() for path in self.path_extractor.extract_paths(input_filename))
+                contexts = predict_lines[0].split()
+                # space_padding = ' ' * (self.config.MAX_CONTEXTS - len(contexts) + 1)
+                space_padding = ' ' * (200 - len(contexts) + 1)
+                predict_lines[0] = ' '.join(contexts) + space_padding
+            except ValueError as e:
+                print(e)
                 continue
+            pc_info_dict = UnitDict()
             model_results = self.model.predict(predict_lines)
 
             prediction_results = Common.parse_results(model_results, pc_info_dict, topk=SHOW_TOP_CONTEXTS)
@@ -53,3 +59,8 @@ class InteractivePredictor:
                     print('Predicted:')
                     for predicted_seq in method_prediction.predictions:
                         print('\t%s' % predicted_seq.prediction)
+
+class UnitDict(dict):
+
+    def __getitem__(self, key):
+        return key

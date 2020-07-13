@@ -21,9 +21,6 @@
 #   recommended to use a multi-core machine for the preprocessing 
 #   step and set this value to the number of cores.
 # PYTHON - python3 interpreter alias.
-REPO_DIR=repos
-CONTEXTS_DIR=output
-DATA_DIR=data
 DATASET_NAME=python_20k
 MAX_DATA_CONTEXTS=1000
 MAX_CONTEXTS=200
@@ -32,6 +29,10 @@ TARGET_VOCAB_SIZE=26347
 NUM_THREADS=64
 PYTHON=python
 ###########################################################
+REPO_DIR=repos
+CONTEXTS_DIR=output
+DATA_DIR=data
+
 TRAIN_DATA_FILE=${CONTEXTS_DIR}/train/path_contexts.csv
 VAL_DATA_FILE=${CONTEXTS_DIR}/val/path_contexts.csv
 TEST_DATA_FILE=${CONTEXTS_DIR}/test/path_contexts.csv
